@@ -1,0 +1,130 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Testing the Image Gallery</title>
+        <!-- required: a default theme file -->
+        <link rel="stylesheet" id="themeStyles" href="dojo/dijit/themes/tundra/tundra.css">
+        <link rel="stylesheet" href="dojo/dojox/image/resources/image.css">
+        <style type="text/css">
+          body {
+					background-color: #000000 ;
+					padding:2em 2em 2em 2em;
+					}
+					li {
+						font-size:12px;
+						color: white;		
+						display:inline-block;
+						margin:0 12px 12px 0;
+						overflow:hidden;
+						position:relative;
+						vertical-align:top;
+            width:100px;
+					}
+					h1 {
+					  color:white;
+					}
+
+        </style>
+        <!-- required: dojo.js -->
+        <script type="text/javascript" src="dojo/dojo/dojo.js" djConfig="isDebug:true, parseOnLoad: true">
+        </script>
+        <script type="text/javascript" src="dojo/dojox/gallery.js" >
+        </script>        
+        <script type="text/javascript">
+            dojo.require("dojox.image.ThumbnailPicker");
+            dojo.require("dojox.image.SlideShow");
+            dojo.require("dojox.image.Gallery");
+            dojo.require("dojo.data.ItemFileReadStore");
+            
+            dojo.addOnLoad(function(){
+                console.log("enter add on load");
+              
+                setTimeout(function(){
+                var gallery = dijit.byId('gallery');
+             		gallery.reset();             		
+					      gallery.setDataStore(imageItemStore1, {
+                    query: {},
+                    count: 20
+                }, {
+                    imageThumbAttr: "thumb",
+                    imageLargeAttr: "large"
+                });
+                }, 250);
+                
+                folderItemStore.fetch({
+                	query:{}, 
+                	onBegin:function(size,req){
+                		console.log("size:" + size);
+                		console.log("req:" + req);
+                	},
+                	onComplete:function(items, req){
+                		imageItemStore=[];
+                		for(i in items){
+                			
+                			var dirPath = folderItemStore.getValue(items[i],"name");
+                	  	console.log("name:" + dirPath);
+                 			var ul = dojo.byId("folders");  									  										
+    									var li = dojo.create("li", { id: dirPath, label:dirPath, innerHTML: dirPath , style: "font-size: 20" }, ul);  									
+    									var imgsrc= "xxx.jpg";
+    									
+    									imageItemStore[i] = new dojo.data.ItemFileReadStore({url:"./"+ dirPath +"/"+	"images.json"});
+    									imageItemStore[i].dirPath = dirPath;    									
+    									if(i>20)
+                				continue;
+    									console.log("issue fetch:" + dirPath);
+    									imageItemStore[i].fetch({query:{}, 
+    											onComplete:dojo.hitch(imageItemStore[i],function(imgs,req2){    											    													
+    													imgsrc = this.getValue(imgs[0],"thumb");  //get the first image thumb
+    													var a = dojo.create("a", {style:"display:inline-block; position:relative"},dojo.byId(this.dirPath));
+    													dojo.create("img", {label:this.dirPath, src: imgsrc, height:"100px", style:"display:inline-block"},a );
+    													console.log("set thumb img for folder:" + this.dirPath + ", thumb img:" + imgsrc);  													
+    												
+    											}),
+    											onError: function(err){
+    												console.error("Fail to access thumb for folder:" +  dirPath +  ", err:" + err);
+    											}
+    									});
+                		}//end for
+                	}, 
+                	onError: function(err, req){
+                		console.log(err);
+                	},
+                });
+             
+                dojo.connect(dojo.byId("folders"),"onclick",function(evt){
+                	console.log(evt);
+                	//construct a new item read store using this sub folder name
+                	var gallery = dijit.byId('gallery');
+                	gallery.reset();
+                	var imageItemStore1=null;
+                	//li 
+                	var ele = evt.target;
+                	
+                	imageItemStore1 = new dojo.data.ItemFileReadStore({url:"./"+ele.id+"/"+	"images.json"});
+                	
+                	
+                	gallery.setDataStore(imageItemStore1, {
+                  	  query: {},
+	                    count: 20
+  	              }, {
+    	                imageThumbAttr: "thumb",
+      	              imageLargeAttr: "large"
+        	        });
+        	        window.scrollTo(0,100);
+              	});
+                
+            });
+        </script>
+    </head>
+    <body  >
+        <h1 class="testTitle">Fei Jia' Gallery</h1>
+		    <div jsId="imageItemStore1" dojoType="dojo.data.ItemFileReadStore" url="images.json"></div>
+		    <div jsId="folderItemStore" dojoType="dojo.data.ItemFileReadStore" url="folders.json"></div>
+        <div id="gallery" dojoType="dojox.image.Gallery" imageWidth="800" imageHeight="600"  ></div> 
+        <ul id="folders">
+       
+      	</ul>  
+        <div >
+    </body>
+</html>

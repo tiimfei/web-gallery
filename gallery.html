@@ -65,7 +65,7 @@
                 			var dirPath = folderItemStore.getValue(items[i],"name");
                 	  	console.log("name:" + dirPath);
                  			var ul = dojo.byId("folders");  									  										
-    									var li = dojo.create("li", { id: dirPath, label:dirPath, innerHTML: dirPath , style: "font-size: 20" }, ul);  									
+    									var li = dojo.create("li", { id: dirPath, folderPath:dirPath,label:dirPath, innerHTML: dirPath , style: "font-size: 20" }, ul);  									
     									var imgsrc= "xxx.jpg";
     									
     									imageItemStore[i] = new dojo.data.ItemFileReadStore({url:"./"+ dirPath +"/"+	"images.json"});
@@ -77,7 +77,8 @@
     											onComplete:dojo.hitch(imageItemStore[i],function(imgs,req2){    											    													
     													imgsrc = this.getValue(imgs[0],"thumb");  //get the first image thumb
     													var a = dojo.create("a", {style:"display:inline-block; position:relative"},dojo.byId(this.dirPath));
-    													dojo.create("img", {label:this.dirPath, src: imgsrc, height:"100px", style:"display:inline-block"},a );
+    													dojo.create("img", {label:this.dirPath, src: imgsrc, height:"100px", style:"display:inline-block",folderPath:this.dirPath},a );
+    													
     													console.log("set thumb img for folder:" + this.dirPath + ", thumb img:" + imgsrc);  													
     												
     											}),
@@ -92,6 +93,7 @@
                 	},
                 });
              
+                //Connect the onclick event to folder title and thumbnail image
                 dojo.connect(dojo.byId("folders"),"onclick",function(evt){
                 	console.log(evt);
                 	//construct a new item read store using this sub folder name
@@ -100,8 +102,8 @@
                 	var imageItemStore1=null;
                 	//li 
                 	var ele = evt.target;
-                	
-                	imageItemStore1 = new dojo.data.ItemFileReadStore({url:"./"+ele.id+"/"+	"images.json"});
+                	console.log("image folder selected:" + ele.getAttribute("folderPath"));
+                	imageItemStore1 = new dojo.data.ItemFileReadStore({url:"./"+ele.getAttribute("folderPath")+"/"+	"images.json"});
                 	
                 	
                 	gallery.setDataStore(imageItemStore1, {
